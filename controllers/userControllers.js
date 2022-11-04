@@ -19,7 +19,7 @@ module.exports.register = async (req, res) => {
 }
 
 module.exports.login = async (req, res) => {
-    const user = await User.find({ userName: req.body.userName }).then(result => result);
+    const user = await User.find({ $or: [{ emailAddress: req.body.input }, { userName: req.body.input }] }).then(result => result);
     if (user.length > 0) {
         const isPasswordCorrect = bcrypt.compareSync(req.body.password, user[0].password);
         if (isPasswordCorrect) {
@@ -33,7 +33,7 @@ module.exports.login = async (req, res) => {
                     sameSite: "None",
                     secure: true
                 })
-            return res.send({ accessToken: token.accessToken, auth: { id: user._id, userName: user[0].userName, emailAddress: user[0].emailAddress }, message: "Cookie Set", response: true })
+            return res.send({ accessToken: token.accessToken, auth: { id: user._id, fullName: user[0].fullName, userName: user[0].userName, emailAddress: user[0].emailAddress }, message: "Cookie Set", response: true })
 
         } else {
             return res.send({ message: "Password incorrect", response: false })
