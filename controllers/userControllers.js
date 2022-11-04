@@ -19,7 +19,7 @@ module.exports.register = async (req, res) => {
 }
 
 module.exports.login = async (req, res) => {
-    const user = await User.find({ $or: [{ emailAddress: req.body.input }, { userName: req.body.input }] }).then(result => result);
+    const user = await User.find({ userName: req.body.input }).then(result => result);
     if (user.length > 0) {
         const isPasswordCorrect = bcrypt.compareSync(req.body.password, user[0].password);
         if (isPasswordCorrect) {
