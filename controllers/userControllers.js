@@ -49,7 +49,7 @@ module.exports.handleRefreshToken = async (req, res) => {
     const refreshToken = cookies.refresh_token;
     const userData = auth.decodeRefresh(refreshToken);
     if (userData === null) {
-        return res.send({ message: "Refresh Token Expired", response: false });
+        return res.send({ message: "Token expired", response: false });
     }
     let user = await User.findById(userData.id).then(results => results);
     let isRefreshTokenExist = user.refreshTokens.some(e => e === refreshToken);
@@ -77,31 +77,14 @@ module.exports.logout = async (req, res) => {
     const cookies = req.cookies;
     if (!cookies?.refresh_token) return res.sendStatus(204);
     const refreshToken = cookies.refresh_token;
-    const userData = auth.decodeRefresh(refreshToken);
-    if (userData === null) {
-        let user = await User.findById(auth.decodeToken(refreshToken).id).then(results => results);
-        let isRefreshTokenExist = user.refreshTokens.some(e => e === refreshToken);
-        if (!isRefreshTokenExist) {
-            res.clearCookie('refresh_token', { httpOnly: true, secure: true, sameSite: "None" });
-            return res.send({ message: "Refresh Token Expired", response: false });
-        }
-        user.refreshTokens = user.refreshTokens.filter(e => e !== refreshToken);
-        user.save();
-        res.clearCookie('refresh_token', { httpOnly: true, sameSite: "None", secure: true });
-        return res.send({ message: "Refresh Token Expired", response: false });
-    }
-    let user = await User.findById(auth.decodeToken(refreshToken).id).then(results => results);
-    // Is refresh token in db?
-    let isRefreshTokenExist = user.refreshTokens.some(e => e === refreshToken);
-
-    if (!isRefreshTokenExist) {
-        res.clearCookie('refresh_token', { httpOnly: true, secure: true, sameSite: "None" });
-        return res.sendStatus(204)
-    }
-    user.refreshTokens = user.refreshTokens.filter(e => e !== refreshToken);
-    user.save();
     res.clearCookie('refresh_token', { httpOnly: true, sameSite: "None", secure: true });
-    return res.send({ message: "Refresh Token Removed and access token" });
+
+    let user = await User.findById(auth.decodeToken(refreshToken).id).then(results => results);
+    if (user.refreshTokens.length > 0) {
+        user.refreshTokens = user.refreshTokens.filter(e => e !== refreshToken);
+        await user.save();
+    }
+    return res.send({ message: "Successfully Logged Out", response: true });
 }
 
 module.exports.getList = async (req, res) => {
@@ -165,7 +148,7 @@ module.exports.setTaskComplete = async (req, res) => {
     const userData = auth.decode(req.headers.authorization.split(" ")[1]);
     let user = await User.findById(userData.id).then(results => results);
     let lists = user.todoList;
-    lists.forEach((e,i) => {
+    lists.forEach((e, i) => {
         if (i === req.body.listIndex) {
             e.tasks[req.body.taskIndex].isCompleted = !e.tasks[req.body.taskIndex].isCompleted;
             user.save();

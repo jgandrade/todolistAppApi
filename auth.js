@@ -12,16 +12,16 @@ module.exports.createWebToken = (user) => {
         emailAddress: user.emailAddress,
     }
     const accessToken = getAccessToken(data);
-    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: '30d' });
+    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: '20s' });
     return ({ accessToken: accessToken, refreshToken: refreshToken });
 }
 
 function getAccessToken(user) {
-    return jwt.sign(user, secret_access, { expiresIn: '15m' });
+    return jwt.sign(user, secret_access, { expiresIn: '10s' });
 }
 
 module.exports.getToken = (user) => {
-    return jwt.sign(user, secret_access, { expiresIn: '15m' });
+    return jwt.sign(user, secret_access, { expiresIn: '10s' });
 }
 
 // CREATE REFRESH TOKEN 
@@ -29,7 +29,7 @@ module.exports.getToken = (user) => {
 // FOR MIDDLEWARE
 module.exports.authenticateToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    
+
     if (authHeader !== undefined) {
         let checkHeader = authHeader.split(" ")[1];
         return jwt.verify(checkHeader, secret_access, (err, data) => {
@@ -62,6 +62,7 @@ module.exports.decodeRefresh = token => {
         return null
     }
 }
+
 module.exports.decodeToken = token => {
     return jwt.decode(token, { complete: true }).payload;
 }
