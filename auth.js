@@ -12,16 +12,16 @@ module.exports.createWebToken = (user) => {
         emailAddress: user.emailAddress,
     }
     const accessToken = getAccessToken(data);
-    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: '20s' });
+    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: '30d' });
     return ({ accessToken: accessToken, refreshToken: refreshToken });
 }
 
 function getAccessToken(user) {
-    return jwt.sign(user, secret_access, { expiresIn: '10s' });
+    return jwt.sign(user, secret_access, { expiresIn: '5m' });
 }
 
 module.exports.getToken = (user) => {
-    return jwt.sign(user, secret_access, { expiresIn: '10s' });
+    return jwt.sign(user, secret_access, { expiresIn: '5m' });
 }
 
 // CREATE REFRESH TOKEN 
